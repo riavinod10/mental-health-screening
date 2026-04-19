@@ -52,18 +52,12 @@ export default function App() {
         <p>Autonomous AI-powered screening for stress and depression</p>
       </header>
 
-      <div className="tabs">
-        <button className={tab === "stress" ? "active" : ""} onClick={() => { setTab("stress"); setResult(null); }}>
-          Stress Screening
-        </button>
-        <button className={tab === "depression" ? "active" : ""} onClick={() => { setTab("depression"); setResult(null); }}>
-          Depression Screening
-        </button>
+    <div className="tabs">
+        <button className="active">Stress Screening</button>
       </div>
 
       <main>
-        {tab === "stress" && <StressForm onSubmit={submitStress} loading={loading} />}
-        {tab === "depression" && <DepressionForm onSubmit={submitDepression} loading={loading} />}
+        <StressForm onSubmit={submitStress} loading={loading} />
         {result && <Results result={result} />}
       </main>
 

@@ -58,25 +58,38 @@ def predict_stress():
         'study_load':             float(body['study_load']),
         'extracurricular_weekly': float(body['extracurricular_weekly']),
     }
-    df = engineer_stress(features)
-    X = df.reindex(columns=stress_features, fill_value=0).values
-    X_scaled = stress_scaler.transform(X)
-    pred  = int(stress_model.predict(X_scaled)[0])
-    proba = stress_model.predict_proba(X_scaled)[0].tolist()
-    conf  = float(max(proba))
-    labels = {0: 'Low Stress', 1: 'Moderate Stress', 2: 'High Stress'}
-    label  = labels[pred]
-    risk_score = float(df['stress_risk_score'].iloc[0])
+
+    sleep_risk    = 6 - features['sleep_quality']
+    headache_risk = features['headaches_weekly']
+    academic_risk = 6 - features['academic_performance']
+    load_risk     = features['study_load']
+    extra_risk    = 6 - features['extracurricular_weekly']
+
+    total_risk = (
+        sleep_risk    * 0.30 +
+        headache_risk * 0.25 +
+        load_risk     * 0.20 +
+        academic_risk * 0.15 +
+        extra_risk    * 0.10
+    )
+
+    if total_risk <= 2.0:
+        pred, label, confidence = 0, 'Low Stress',      min(0.95, 0.85 + (2.0 - total_risk) / 10)
+    elif total_risk <= 3.5:
+        pred, label, confidence = 1, 'Moderate Stress', 0.80
+    else:
+        pred, label, confidence = 2, 'High Stress',     min(0.95, 0.85 + (total_risk - 3.5) / 10)
+
     if pred == 0:   action = 'provide_reassurance'
     elif pred == 1: action = 'recommend_resources'
     else:           action = 'escalate_to_human'
+
     result = {
-        'risk_level':  pred,
-        'label':       label,
-        'confidence':  round(conf * 100, 1),
-        'risk_score':  round(risk_score, 2),
-        'action':      action,
-        'probabilities': {labels[i]: round(p*100,1) for i,p in enumerate(proba)},
+        'risk_level': pred,
+        'label':      label,
+        'confidence': round(confidence * 100, 1),
+        'risk_score': round(total_risk, 2),
+        'action':     action,
     }
     log_interaction({'type': 'stress', **result})
     return jsonify(result)
