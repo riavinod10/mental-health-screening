@@ -271,7 +271,7 @@ def _build_lgbm(n_classes, random_state=42):
 def _build_stacking(rf, xgb, lgbm, n_classes, cv=5):
     meta = LogisticRegression(
         C=1.0, max_iter=2000, class_weight='balanced',
-        multi_class='auto', random_state=42
+        random_state=42
     )
     return StackingClassifier(
         estimators=[('rf', rf), ('xgb', xgb), ('lgbm', lgbm)],
@@ -304,6 +304,10 @@ def train_stress_model():
     print(f"\n  Dataset size after augmentation: {len(df)} rows")
 
     df, feature_cols = engineer_stress_features(df)
+    
+    # ✅ ADD THIS LINE - Save feature columns for agent
+    joblib.dump(feature_cols, 'models/stress_feature_cols.pkl')
+    
     X = df[feature_cols].values
     y = df['stress_category'].values
     n_classes = len(np.unique(y))
