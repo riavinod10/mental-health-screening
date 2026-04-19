@@ -129,25 +129,6 @@ Python 3.11 | Pandas | NumPy | Scikit-learn | XGBoost | LightGBM | Matplotlib | 
 
 ---
 
-## 📁 Project Structure
-
-mental_health_project/
-├── src/
-│   ├── agent.py
-│   ├── train_models.py
-│   ├── preprocess_stress.py
-│   ├── preprocess_kaggle.py
-│   ├── feature_engineering.py
-│   └── utils.py
-├── logs/
-├── models/
-├── data/raw/
-├── data/processed/
-├── results/figures/
-└── main.py
-
----
-
 ## 🚀 How to Run
 
 ```bash
