@@ -53,14 +53,19 @@ export default function App() {
       </header>
 
     <div className="tabs">
-        <button className="active">Stress Screening</button>
+        <button className={tab === "stress" ? "active" : ""} onClick={() => { setTab("stress"); setResult(null); }}>
+          Stress Screening
+        </button>
+        <button className={tab === "depression" ? "active" : ""} onClick={() => { setTab("depression"); setResult(null); }}>
+          Depression Screening
+        </button>
       </div>
 
       <main>
-        <StressForm onSubmit={submitStress} loading={loading} />
+        {tab === "stress" && <StressForm onSubmit={submitStress} loading={loading} />}
+        {tab === "depression" && <DepressionForm onSubmit={submitDepression} loading={loading} />}
         {result && <Results result={result} />}
       </main>
-
       <footer>
         <p>Built with Agentic AI — SIT Pune AI Course Project</p>
       </footer>

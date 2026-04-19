@@ -97,23 +97,59 @@ def predict_stress():
 @app.route('/predict/depression', methods=['POST'])
 def predict_depression():
     body = request.json
-    scores = [int(body.get(f'q{i}', 0)) for i in range(1, 10)]
-    total  = sum(scores)
-    if   total <= 4:  severity, level = 'Minimal',           0
-    elif total <= 9:  severity, level = 'Mild',              1
-    elif total <= 14: severity, level = 'Moderate',          2
-    elif total <= 19: severity, level = 'Moderately Severe', 3
-    else:             severity, level = 'Severe',            4
-    high_risk = int(scores[8]) >= 2
+
+    # Rule-based scoring using same factors as ML model
+    academic_pressure = float(body.get('academic_pressure', 3))
+    work_pressure     = float(body.get('work_pressure', 0))
+    study_satisfaction= float(body.get('study_satisfaction', 3))
+    sleep_hours       = float(body.get('sleep_hours', 6))
+    financial_stress  = float(body.get('financial_stress', 2))
+    work_study_hours  = float(body.get('work_study_hours', 6))
+    suicidal_thoughts = int(body.get('suicidal_thoughts', 0))
+    family_history    = int(body.get('family_history', 0))
+    dietary_habits    = int(body.get('dietary_habits', 2))  # 1=unhealthy,2=moderate,3=healthy
+
+    # Risk score calculation
+    sleep_risk        = max(0, (8 - sleep_hours) / 8 * 5)
+    pressure_risk     = (academic_pressure + work_pressure) / 2
+    satisfaction_risk = 6 - study_satisfaction
+    financial_risk    = financial_stress
+    hours_risk        = min(5, work_study_hours / 3)
+    diet_risk         = 4 - dietary_habits
+    history_risk      = 3 if family_history else 0
+    suicidal_risk     = 5 if suicidal_thoughts else 0
+
+    total_risk = (
+        pressure_risk     * 0.25 +
+        sleep_risk        * 0.20 +
+        satisfaction_risk * 0.15 +
+        financial_risk    * 0.15 +
+        hours_risk        * 0.10 +
+        diet_risk         * 0.05 +
+        history_risk      * 0.05 +
+        suicidal_risk     * 0.05
+    )
+
+    if total_risk <= 1.5:   severity, level = 'Low Risk',      0
+    elif total_risk <= 3.0: severity, level = 'Moderate Risk', 1
+    else:                   severity, level = 'High Risk',     2
+
+    if level == 0:   action = 'provide_reassurance'
+    elif level == 1: action = 'recommend_resources'
+    else:            action = 'escalate_to_human'
+
+    high_risk = suicidal_thoughts == 1
+
     result = {
-        'total_score': total,
+        'total_score': round(total_risk, 2),
         'severity':    severity,
         'level':       level,
         'high_risk':   high_risk,
-        'scores':      scores,
+        'action':      action,
     }
     log_interaction({'type': 'depression', **result})
     return jsonify(result)
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

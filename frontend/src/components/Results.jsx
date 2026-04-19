@@ -62,20 +62,20 @@ function StressResult({ result }) {
 }
 
 function DepressionResult({ result }) {
-  const colors = { 0: "#22c55e", 1: "#22c55e", 2: "#f59e0b", 3: "#f97316", 4: "#ef4444" };
+  const colors = { 0: "#22c55e", 1: "#f59e0b", 2: "#ef4444" };
   const color = colors[result.level] || "#f59e0b";
 
   return (
     <div className="result-card">
       <div className="result-header">
-        <h2 style={{ color }}>{result.severity} Depression</h2>
+        <h2 style={{ color }}>{result.severity}</h2>
         <div className="badges">
-          <span className="badge">PHQ-9 Score: {result.total_score}/27</span>
+          <span className="badge">Risk Score: {result.total_score}/5</span>
         </div>
       </div>
 
       <div className="progress-wrap">
-        <div className="progress-bar" style={{ width: `${(result.total_score / 27) * 100}%`, background: color }} />
+        <div className="progress-bar" style={{ width: `${(result.total_score / 5) * 100}%`, background: color }}/>
       </div>
 
       {result.high_risk && (
